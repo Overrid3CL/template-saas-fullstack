@@ -1,35 +1,48 @@
-# Nuxt Starter Template
+# Template SaaS: Nuxt + Better Auth Organizations + Prisma
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+[![Nuxt UI](https://img.shields.io/badge/Hecho%20con-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+Template base para crear aplicaciones SaaS con [Nuxt](https://nuxt.com), autenticacion con [Better Auth](https://www.better-auth.com), soporte multi-tenant con organizaciones y persistencia de datos con [Prisma](https://www.prisma.io).
 
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+- Enfoque SaaS listo para extender: auth, organizaciones y base de datos.
+- Interfaz construida con Nuxt UI para acelerar dashboards y paneles administrativos.
+- Configuracion preparada para PostgreSQL y flujo de migraciones con Prisma.
 
-<a href="https://starter-template.nuxt.dev/" target="_blank">
+<a href="https://nuxt.com/" target="_blank">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
     <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
+    <img alt="Template SaaS con Nuxt" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
   </picture>
 </a>
 
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
+## Stack principal
 
-## Quick Start
+- **Nuxt** para la aplicacion full-stack y renderizado.
+- **Better Auth + Organizations** para autenticacion y gestion por organizaciones.
+- **Prisma** para modelado de datos, cliente tipado y migraciones.
+- **PostgreSQL** como motor de base de datos recomendado.
+
+## Que incluye este template
+
+- Base de autenticacion y estructura para organizaciones (multi-tenant).
+- Configuracion de Prisma lista para conectar con PostgreSQL.
+- Estructura inicial de app SaaS sobre Nuxt UI.
+- Scripts de desarrollo, build y flujo de migraciones.
+
+## Inicio rapido
 
 ```bash [Terminal]
 npm create nuxt@latest -- -t github:nuxt-ui-templates/starter
 ```
 
-## Deploy your own
+## Despliega tu propia version
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+[![Deploy con Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
 
-## Setup
+## Instalacion
 
-Make sure to install the dependencies:
+Asegurate de instalar las dependencias:
 
 ```bash
 pnpm install
@@ -37,62 +50,62 @@ pnpm install
 
 ## Prisma + PostgreSQL
 
-This project includes Prisma ORM v7 configured for PostgreSQL using an external `DATABASE_URL`.
+Este proyecto incluye Prisma ORM v7 configurado para PostgreSQL mediante una `DATABASE_URL` externa.
 
-1. Create `.env` from `.env.example` (copy the file manually or with your shell command).
+1. Crea `.env` a partir de `.env.example` (copiando el archivo manualmente o con tu shell).
 
-2. Update `DATABASE_URL` in `.env` to point to your PostgreSQL instance.
+2. Actualiza `DATABASE_URL` en `.env` para apuntar a tu instancia de PostgreSQL.
 
-3. Prisma v7 change: connection URL is defined in `prisma.config.ts` (not in `prisma/schema.prisma`).
+3. Cambio en Prisma v7: la URL de conexion se define en `prisma.config.ts` (no en `prisma/schema.prisma`).
 
-4. Generate the Prisma client:
+4. Genera el cliente de Prisma:
 
 ```bash
 pnpm prisma:generate
 ```
 
-5. Create and apply your first migration after adding models to `prisma/schema.prisma`:
+5. Crea y aplica tu primera migracion despues de agregar modelos en `prisma/schema.prisma`:
 
 ```bash
 pnpm prisma:migrate:dev --name init
 ```
 
-6. Optional: open Prisma Studio:
+6. Opcional: abre Prisma Studio:
 
 ```bash
 pnpm prisma:studio
 ```
 
-### Database health check endpoint
+### Endpoint de salud de base de datos
 
-A health check endpoint is available at:
+Hay un endpoint de health check disponible en:
 
 `GET /api/health/db`
 
-It runs a simple `SELECT 1` query using Prisma and returns whether the database connection is healthy.
+Ejecuta una consulta simple `SELECT 1` usando Prisma y devuelve si la conexion a la base de datos esta saludable.
 
-For Prisma v7, the runtime client also uses a PostgreSQL adapter (`@prisma/adapter-pg`) with `pg`.
+Para Prisma v7, el cliente runtime tambien utiliza un adaptador PostgreSQL (`@prisma/adapter-pg`) con `pg`.
 
-## Development Server
+## Servidor de desarrollo
 
-Start the development server on `http://localhost:3000`:
+Inicia el servidor de desarrollo en `http://localhost:3000`:
 
 ```bash
 pnpm dev
 ```
 
-## Production
+## Produccion
 
-Build the application for production:
+Compila la aplicacion para produccion:
 
 ```bash
 pnpm build
 ```
 
-Locally preview production build:
+Previsualiza localmente el build de produccion:
 
 ```bash
 pnpm preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Consulta la [documentacion de despliegue](https://nuxt.com/docs/getting-started/deployment) para mas informacion.
