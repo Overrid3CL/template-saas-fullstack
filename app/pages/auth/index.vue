@@ -70,15 +70,19 @@ async function resolvePostAuthRoute() {
   const hasActiveOrganization = Boolean(session?.session.activeOrganizationId);
 
   if (hasActiveOrganization) {
-    return "/dashboard";
+    return "/";
   }
 
   try {
-    const organizations = await $fetch<unknown[]>("/api/auth/organization/list", {
-      method: "GET",
-    });
-    const hasOrganizations = Array.isArray(organizations) && organizations.length > 0;
-    return hasOrganizations ? "/dashboard" : "/organization/setup";
+    const organizations = await $fetch<unknown[]>(
+      "/api/auth/organization/list",
+      {
+        method: "GET",
+      },
+    );
+    const hasOrganizations =
+      Array.isArray(organizations) && organizations.length > 0;
+    return hasOrganizations ? "/" : "/organization/setup";
   } catch {
     return "/organization/setup";
   }

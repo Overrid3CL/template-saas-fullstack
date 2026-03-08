@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { authClient } from '~~/lib/auth-client'
 
 defineProps<{
   collapsed?: boolean
 }>()
 
 const colorMode = useColorMode()
-const appConfig = useAppConfig()
-
-const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
-const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const user = ref({
   name: 'Benjamin Canac',
@@ -18,6 +15,11 @@ const user = ref({
     alt: 'Benjamin Canac'
   }
 })
+
+async function signOut() {
+  await authClient.signOut()
+  await navigateTo('/auth')
+}
 
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',
@@ -34,50 +36,6 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   icon: 'i-lucide-settings',
   to: '/settings'
 }], [{
-  label: 'Tema',
-  icon: 'i-lucide-palette',
-  children: [{
-    label: 'Primario',
-    slot: 'chip',
-    chip: appConfig.ui.colors.primary,
-    content: {
-      align: 'center',
-      collisionPadding: 16
-    },
-    children: colors.map(color => ({
-      label: color,
-      chip: color,
-      slot: 'chip',
-      checked: appConfig.ui.colors.primary === color,
-      type: 'checkbox',
-      onSelect: (e) => {
-        e.preventDefault()
-
-        appConfig.ui.colors.primary = color
-      }
-    }))
-  }, {
-    label: 'Neutro',
-    slot: 'chip',
-    chip: appConfig.ui.colors.neutral === 'neutral' ? 'old-neutral' : appConfig.ui.colors.neutral,
-    content: {
-      align: 'end',
-      collisionPadding: 16
-    },
-    children: neutrals.map(color => ({
-      label: color,
-      chip: color === 'neutral' ? 'old-neutral' : color,
-      slot: 'chip',
-      type: 'checkbox',
-      checked: appConfig.ui.colors.neutral === color,
-      onSelect: (e) => {
-        e.preventDefault()
-
-        appConfig.ui.colors.neutral = color
-      }
-    }))
-  }]
-}, {
   label: 'Apariencia',
   icon: 'i-lucide-sun-moon',
   children: [{
@@ -105,37 +63,6 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
     }
   }]
 }], [{
-  label: 'Plantillas',
-  icon: 'i-lucide-layout-template',
-  children: [{
-    label: 'Inicio',
-    to: 'https://starter-template.nuxt.dev/'
-  }, {
-    label: 'Aterrizaje',
-    to: 'https://landing-template.nuxt.dev/'
-  }, {
-    label: 'Documentacion',
-    to: 'https://docs-template.nuxt.dev/'
-  }, {
-    label: 'SaaS',
-    to: 'https://saas-template.nuxt.dev/'
-  }, {
-    label: 'Panel',
-    to: 'https://dashboard-template.nuxt.dev/',
-    color: 'primary',
-    checked: true,
-    type: 'checkbox'
-  }, {
-    label: 'Chat',
-    to: 'https://chat-template.nuxt.dev/'
-  }, {
-    label: 'Portafolio',
-    to: 'https://portfolio-template.nuxt.dev/'
-  }, {
-    label: 'Registro de cambios',
-    to: 'https://changelog-template.nuxt.dev/'
-  }]
-}], [{
   label: 'Documentacion',
   icon: 'i-lucide-book-open',
   to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
@@ -147,7 +74,11 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   target: '_blank'
 }, {
   label: 'Cerrar sesion',
-  icon: 'i-lucide-log-out'
+  icon: 'i-lucide-log-out',
+  onSelect(e: Event) {
+    e.preventDefault()
+    void signOut()
+  }
 }]]))
 </script>
 
@@ -172,17 +103,5 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
         trailingIcon: 'text-dimmed'
       }"
     />
-
-    <template #chip-leading="{ item }">
-      <div class="inline-flex items-center justify-center shrink-0 size-5">
-        <span
-          class="rounded-full ring ring-bg bg-(--chip-light) dark:bg-(--chip-dark) size-2"
-          :style="{
-            '--chip-light': `var(--color-${(item as any).chip}-500)`,
-            '--chip-dark': `var(--color-${(item as any).chip}-400)`
-          }"
-        />
-      </div>
-    </template>
   </UDropdownMenu>
 </template>
