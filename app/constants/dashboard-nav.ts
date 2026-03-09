@@ -37,7 +37,7 @@ export const dashboardNavSections: DashboardNavSection[] = [
     items: [
       {
         label: 'General',
-        to: '/settings/general',
+        to: '/settings',
         description: 'Preferencias generales del tenant'
       },
       {

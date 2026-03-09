@@ -1,4 +1,5 @@
 import { authClient } from "~/lib/auth-client";
+import { ensureActiveOrganization } from "~/lib/organization-session";
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const organizationSetupRoute = "/organization/setup";
@@ -19,23 +20,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo("/auth");
   }
 
-  const hasActiveOrganization = Boolean(session.session.activeOrganizationId);
-  let hasOrganizations = false;
-
-  if (!hasActiveOrganization) {
-    try {
-      const organizations = await $fetch<unknown[]>(
-        "/api/auth/organization/list",
-        {
-          method: "GET",
-        },
-      );
-      hasOrganizations =
-        Array.isArray(organizations) && organizations.length > 0;
-    } catch {
-      hasOrganizations = false;
-    }
-  }
+  const orgState = await ensureActiveOrganization(session);
+  const hasActiveOrganization = orgState.hasActiveOrganization;
+  const hasOrganizations = orgState.hasOrganizations;
 
   const mustCompleteOrganizationSetup =
     !hasActiveOrganization && !hasOrganizations;

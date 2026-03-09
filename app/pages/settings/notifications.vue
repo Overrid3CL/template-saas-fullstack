@@ -3,13 +3,38 @@ definePageMeta({
   layout: "dashboard",
 });
 
-const state = reactive<{ [key: string]: boolean }>({
+type NotificationKey =
+  | "email"
+  | "desktop"
+  | "product_updates"
+  | "weekly_digest"
+  | "important_updates";
+
+type NotificationState = Record<NotificationKey, boolean>;
+
+const state = reactive<NotificationState>({
   email: true,
   desktop: false,
   product_updates: true,
   weekly_digest: false,
   important_updates: true,
 });
+const toast = useToast();
+const { preferences, refreshPreferences, savePreferences, saving } = useNotificationSettings();
+
+await refreshPreferences();
+
+watch(
+  preferences,
+  (value) => {
+    state.email = value.email;
+    state.desktop = value.desktop;
+    state.product_updates = value.product_updates;
+    state.weekly_digest = value.weekly_digest;
+    state.important_updates = value.important_updates;
+  },
+  { immediate: true },
+);
 
 const sections = [
   {
@@ -17,12 +42,12 @@ const sections = [
     description: "Donde podemos avisarte?",
     fields: [
       {
-        name: "email",
+        name: "email" as NotificationKey,
         label: "Correo",
         description: "Recibir un resumen diario por correo.",
       },
       {
-        name: "desktop",
+        name: "desktop" as NotificationKey,
         label: "Escritorio",
         description: "Recibir notificaciones en el escritorio.",
       },
@@ -33,18 +58,18 @@ const sections = [
     description: "Recibir novedades de Nuxt UI.",
     fields: [
       {
-        name: "weekly_digest",
+        name: "weekly_digest" as NotificationKey,
         label: "Resumen semanal",
         description: "Recibir un resumen semanal de novedades.",
       },
       {
-        name: "product_updates",
+        name: "product_updates" as NotificationKey,
         label: "Actualizaciones del producto",
         description:
           "Recibir un correo mensual con nuevas funciones y actualizaciones.",
       },
       {
-        name: "important_updates",
+        name: "important_updates" as NotificationKey,
         label: "Actualizaciones importantes",
         description:
           "Recibir correos sobre cambios importantes como seguridad, mantenimiento, etc.",
@@ -54,8 +79,22 @@ const sections = [
 ];
 
 async function onChange() {
-  // Do something with data
-  console.log(state);
+  try {
+    await savePreferences({
+      email: state.email,
+      desktop: state.desktop,
+      product_updates: state.product_updates,
+      weekly_digest: state.weekly_digest,
+      important_updates: state.important_updates,
+    });
+  } catch (error: any) {
+    toast.add({
+      title: "No se pudieron guardar las preferencias",
+      description: error?.data?.message || error?.message || "Intenta nuevamente.",
+      icon: "i-lucide-circle-alert",
+      color: "error",
+    });
+  }
 }
 </script>
 
@@ -77,7 +116,11 @@ async function onChange() {
         :description="field.description"
         class="flex items-center justify-between not-last:pb-4 gap-2"
       >
-        <USwitch v-model="state[field.name]" @update:model-value="onChange" />
+        <USwitch
+          v-model="state[field.name]"
+          :disabled="saving"
+          @update:model-value="onChange"
+        />
       </UFormField>
     </UPageCard>
   </div>

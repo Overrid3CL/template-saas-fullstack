@@ -1,51 +1,54 @@
 <script setup lang="ts">
-import type { AuthFormField, FormError, FormSubmitEvent } from '@nuxt/ui'
+import type { AuthFormField, FormError, FormSubmitEvent } from "@nuxt/ui";
 
 definePageMeta({
-  layout: 'auth'
-})
+  layout: "auth",
+});
 
 type ForgotPasswordForm = {
-  email: string
-}
+  email: string;
+};
 
-const loading = ref(false)
-const errorMessage = ref('')
-const successMessage = ref('')
+const loading = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
 
-const fields: AuthFormField[] = [{
-  name: 'email',
-  type: 'email',
-  label: 'Correo',
-  placeholder: 'tu@email.com',
-  required: true
-}]
+const fields: AuthFormField[] = [
+  {
+    name: "email",
+    type: "email",
+    label: "Correo",
+    placeholder: "tu@email.com",
+    required: true,
+  },
+];
 
 function validate(state: Partial<ForgotPasswordForm>): FormError<string>[] {
-  const errors: FormError<string>[] = []
+  const errors: FormError<string>[] = [];
 
   if (!state.email?.trim()) {
-    errors.push({ name: 'email', message: 'El email es obligatorio' })
+    errors.push({ name: "email", message: "El email es obligatorio" });
   } else if (!/^\S+@\S+\.\S+$/.test(state.email)) {
-    errors.push({ name: 'email', message: 'Ingresa un email valido' })
+    errors.push({ name: "email", message: "Ingresa un email valido" });
   }
 
-  return errors
+  return errors;
 }
 
 async function onSubmit(payload: FormSubmitEvent<ForgotPasswordForm>) {
   try {
-    loading.value = true
-    errorMessage.value = ''
-    successMessage.value = ''
+    loading.value = true;
+    errorMessage.value = "";
+    successMessage.value = "";
 
     // TODO: conectar con flujo real de recuperacion.
-    await new Promise(resolve => setTimeout(resolve, 600))
-    successMessage.value = `Si existe una cuenta para ${payload.data.email}, recibiras instrucciones por correo.`
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    successMessage.value = `Si existe una cuenta para ${payload.data.email}, recibiras instrucciones por correo.`;
   } catch {
-    errorMessage.value = 'No se pudo iniciar la recuperacion. Intentalo nuevamente.'
+    errorMessage.value =
+      "No se pudo iniciar la recuperacion. Intentalo nuevamente.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
@@ -53,7 +56,7 @@ async function onSubmit(payload: FormSubmitEvent<ForgotPasswordForm>) {
 <template>
   <UPageCard>
     <UAuthForm
-      title="Recuperar contrasena"
+      title="Recuperar contraseña"
       description="Te enviaremos instrucciones para restablecer tu acceso."
       icon="i-lucide-mail"
       :fields="fields"
@@ -63,13 +66,10 @@ async function onSubmit(payload: FormSubmitEvent<ForgotPasswordForm>) {
       @submit="onSubmit"
     >
       <template #description>
-        Recordaste tu contrasena?
-        <ULink
-          to="/auth"
-          class="text-primary font-medium"
-        >
-          Volver al login
-        </ULink>.
+        Recordaste tu contraseña?
+        <ULink to="/auth" class="text-primary font-medium">
+          Volver al login </ULink
+        >.
       </template>
 
       <template #validation>

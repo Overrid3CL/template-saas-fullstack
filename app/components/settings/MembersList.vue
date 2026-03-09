@@ -1,26 +1,32 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Member } from '~/types'
+import type { MemberDto } from '~/types/settings'
 
-defineProps<{
-  members: Member[]
+const props = defineProps<{
+  members: MemberDto[]
 }>()
 
-const items = [{
-  label: 'Editar miembro',
-  onSelect: () => console.log('Editar miembro')
-}, {
-  label: 'Quitar miembro',
-  color: 'error' as const,
-  onSelect: () => console.log('Quitar miembro')
-}] satisfies DropdownMenuItem[]
+const emit = defineEmits<{
+  roleChange: [memberId: string, role: 'member' | 'owner']
+  remove: [memberId: string]
+}>()
+
+function actionItems(memberId: string): DropdownMenuItem[] {
+  return [{
+    label: 'Quitar miembro',
+    color: 'error',
+    onSelect: () => emit('remove', memberId)
+  }]
+}
+
+void props
 </script>
 
 <template>
   <ul role="list" class="divide-y divide-default">
     <li
-      v-for="(member, index) in members"
-      :key="index"
+      v-for="member in members"
+      :key="member.id"
       class="flex items-center justify-between gap-3 py-3 px-4 sm:px-6"
     >
       <div class="flex items-center gap-3 min-w-0">
@@ -48,9 +54,10 @@ const items = [{
           ]"
           color="neutral"
           :ui="{ item: 'capitalize' }"
+          @update:model-value="emit('roleChange', member.id, $event as 'member' | 'owner')"
         />
 
-        <UDropdownMenu :items="items" :content="{ align: 'end' }">
+        <UDropdownMenu :items="actionItems(member.id)" :content="{ align: 'end' }">
           <UButton
             icon="i-lucide-ellipsis-vertical"
             color="neutral"

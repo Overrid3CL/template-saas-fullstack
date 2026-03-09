@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AuthFormField, FormError, FormSubmitEvent } from "@nuxt/ui";
 import { authClient } from "~~/lib/auth-client";
+import { ensureActiveOrganization } from "~~/lib/organization-session";
 
 definePageMeta({
   layout: "auth",
@@ -25,7 +26,7 @@ const fields: AuthFormField[] = [
   {
     name: "password",
     type: "password",
-    label: "Contrasena",
+    label: "contraseña",
     placeholder: "********",
     required: true,
   },
@@ -51,7 +52,7 @@ function validate(state: Partial<LoginForm>): FormError<string>[] {
   }
 
   if (!state.password) {
-    errors.push({ name: "password", message: "La contrasena es obligatoria" });
+    errors.push({ name: "password", message: "La contraseña es obligatoria" });
   } else if (state.password.length < 8) {
     errors.push({ name: "password", message: "Minimo 8 caracteres" });
   }
@@ -65,27 +66,8 @@ async function signInWithGithub() {
 }
 
 async function resolvePostAuthRoute() {
-  const sessionResult = await authClient.getSession();
-  const session = sessionResult.data;
-  const hasActiveOrganization = Boolean(session?.session.activeOrganizationId);
-
-  if (hasActiveOrganization) {
-    return "/";
-  }
-
-  try {
-    const organizations = await $fetch<unknown[]>(
-      "/api/auth/organization/list",
-      {
-        method: "GET",
-      },
-    );
-    const hasOrganizations =
-      Array.isArray(organizations) && organizations.length > 0;
-    return hasOrganizations ? "/" : "/organization/setup";
-  } catch {
-    return "/organization/setup";
-  }
+  const orgState = await ensureActiveOrganization();
+  return orgState.hasActiveOrganization ? "/" : "/organization/setup";
 }
 
 async function onSubmit(payload: FormSubmitEvent<LoginForm>) {
@@ -115,7 +97,7 @@ async function onSubmit(payload: FormSubmitEvent<LoginForm>) {
   <UPageCard>
     <UAuthForm
       title="Iniciar sesion"
-      description="Ingresa con email y contrasena para continuar."
+      description="Ingresa con email y contraseña para continuar."
       icon="i-lucide-lock"
       :fields="fields"
       :providers="providers"

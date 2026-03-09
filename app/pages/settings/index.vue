@@ -7,33 +7,71 @@ import * as z from "zod";
 import type { FormSubmitEvent } from "@nuxt/ui";
 
 const fileRef = ref<HTMLInputElement>();
+const saving = ref(false);
+const uploadingAvatar = ref(false);
+const toast = useToast();
+const { profile: persistedProfile, refreshProfile, updateProfile, createAvatarUploadUrl } =
+  useProfileSettings();
+
+await refreshProfile();
 
 const profileSchema = z.object({
   name: z.string().min(2, "Muy corto"),
   email: z.string().email("Correo invalido"),
-  username: z.string().min(2, "Muy corto"),
+  username: z.string().optional(),
   avatar: z.string().optional(),
-  bio: z.string().optional(),
 });
 
 type ProfileSchema = z.output<typeof profileSchema>;
 
 const profile = reactive<Partial<ProfileSchema>>({
-  name: "Benjamin Canac",
-  email: "ben@nuxtlabs.com",
-  username: "benjamincanac",
+  name: "",
+  email: "",
+  username: "",
   avatar: undefined,
-  bio: undefined,
 });
-const toast = useToast();
+
+watch(
+  persistedProfile,
+  (nextProfile) => {
+    const email = nextProfile?.email || "";
+    profile.name = nextProfile?.name || email || "";
+    profile.email = email;
+    profile.username = nextProfile?.username || (email ? email.split("@")[0] : "");
+    profile.avatar = nextProfile?.image || undefined;
+  },
+  { immediate: true },
+);
+
 async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
-  toast.add({
-    title: "Listo",
-    description: "Tu configuracion se actualizo correctamente.",
-    icon: "i-lucide-check",
-    color: "success",
-  });
-  console.log(event.data);
+  saving.value = true;
+
+  const image = event.data.avatar?.startsWith("blob:")
+    ? undefined
+    : event.data.avatar;
+
+  try {
+    await updateProfile({
+      name: event.data.name,
+      image,
+    });
+
+    toast.add({
+      title: "Perfil actualizado",
+      description: "Guardamos los cambios de tu cuenta.",
+      icon: "i-lucide-check",
+      color: "success",
+    });
+  } catch (error: any) {
+    toast.add({
+      title: "No se pudo guardar",
+      description: error?.message || "Intenta nuevamente en unos segundos.",
+      icon: "i-lucide-circle-alert",
+      color: "error",
+    });
+  } finally {
+    saving.value = false;
+  }
 }
 
 function onFileChange(e: Event) {
@@ -43,11 +81,55 @@ function onFileChange(e: Event) {
     return;
   }
 
-  profile.avatar = URL.createObjectURL(input.files[0]!);
+  void uploadAvatar(input.files[0]!);
 }
 
 function onFileClick() {
   fileRef.value?.click();
+}
+
+async function uploadAvatar(file: File) {
+  uploadingAvatar.value = true;
+  const localPreview = URL.createObjectURL(file);
+  profile.avatar = localPreview;
+
+  try {
+    const uploadInfo = await createAvatarUploadUrl({
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+    });
+
+    await fetch(uploadInfo.uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+
+    profile.avatar = uploadInfo.publicUrl;
+    await updateProfile({
+      name: profile.name || persistedProfile.value?.name || "",
+      image: uploadInfo.publicUrl,
+    });
+
+    toast.add({
+      title: "Avatar actualizado",
+      description: "La imagen se subio correctamente.",
+      icon: "i-lucide-check",
+      color: "success",
+    });
+  } catch (error: any) {
+    profile.avatar = persistedProfile.value?.image || undefined;
+    toast.add({
+      title: "No se pudo subir el avatar",
+      description: error?.data?.message || error?.message || "Intenta nuevamente.",
+      icon: "i-lucide-circle-alert",
+      color: "error",
+    });
+  } finally {
+    uploadingAvatar.value = false;
+  }
 }
 </script>
 
@@ -70,6 +152,7 @@ function onFileClick() {
         label="Guardar cambios"
         color="neutral"
         type="submit"
+        :loading="saving"
         class="w-fit lg:ms-auto"
       />
     </UPageCard>
@@ -92,17 +175,26 @@ function onFileClick() {
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <UInput v-model="profile.email" type="email" autocomplete="off" />
+        <UInput
+          v-model="profile.email"
+          type="email"
+          autocomplete="off"
+          disabled
+        />
       </UFormField>
       <USeparator />
       <UFormField
         name="username"
         label="Usuario"
-        description="Tu nombre de usuario unico para acceder y para tu URL de perfil."
-        required
+        description="Se genera automaticamente desde tu correo por ahora."
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <UInput v-model="profile.username" type="username" autocomplete="off" />
+        <UInput
+          v-model="profile.username"
+          type="username"
+          autocomplete="off"
+          disabled
+        />
       </UFormField>
       <USeparator />
       <UFormField
@@ -113,7 +205,12 @@ function onFileClick() {
       >
         <div class="flex flex-wrap items-center gap-3">
           <UAvatar :src="profile.avatar" :alt="profile.name" size="lg" />
-          <UButton label="Elegir" color="neutral" @click="onFileClick" />
+          <UButton
+            label="Elegir"
+            color="neutral"
+            :loading="uploadingAvatar"
+            @click="onFileClick"
+          />
           <input
             ref="fileRef"
             type="file"
@@ -122,16 +219,6 @@ function onFileClick() {
             @change="onFileChange"
           />
         </div>
-      </UFormField>
-      <USeparator />
-      <UFormField
-        name="bio"
-        label="Biografia"
-        description="Descripcion breve de tu perfil. Las URL se enlazan automaticamente."
-        class="flex max-sm:flex-col justify-between items-start gap-4"
-        :ui="{ container: 'w-full' }"
-      >
-        <UTextarea v-model="profile.bio" :rows="5" autoresize class="w-full" />
       </UFormField>
     </UPageCard>
   </UForm>

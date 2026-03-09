@@ -19,6 +19,7 @@ model User {
   memberships   Member[]
   invitations   Invitation[]
   teamMembers   TeamMember[]
+  notificationPreferences NotificationPreference[]
 }
 
 model Session {
@@ -78,6 +79,7 @@ model Organization {
   invitations Invitation[]
   teams       Team[]
   roles       OrganizationRole[]
+  notificationPreferences NotificationPreference[]
 }
 
 model Member {
@@ -151,4 +153,22 @@ model TeamMember {
   @@unique([teamId, userId])
   @@index([teamId])
   @@index([userId])
+}
+
+model NotificationPreference {
+  id                 String       @id @default(cuid())
+  userId             String
+  organizationId     String
+  email              Boolean      @default(true)
+  desktop            Boolean      @default(false)
+  productUpdates     Boolean      @default(true)
+  weeklyDigest       Boolean      @default(false)
+  importantUpdates   Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
 }

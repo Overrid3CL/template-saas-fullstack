@@ -7,17 +7,24 @@ defineProps<{
 }>()
 
 const colorMode = useColorMode()
+const { currentUser, ensureCurrentUser, clearCurrentUser } = useCurrentUser()
+await ensureCurrentUser()
 
-const user = ref({
-  name: 'Benjamin Canac',
-  avatar: {
-    src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
+const user = computed(() => {
+  const displayName = currentUser.value?.name || currentUser.value?.email || 'Usuario'
+
+  return {
+    name: displayName,
+    avatar: {
+      src: currentUser.value?.image || undefined,
+      alt: displayName
+    }
   }
 })
 
 async function signOut() {
   await authClient.signOut()
+  clearCurrentUser()
   await navigateTo('/auth')
 }
 
