@@ -5,6 +5,10 @@ import { prisma } from '~~/server/utils/prisma'
 
 const githubClientId = process.env.GITHUB_CLIENT_ID
 const githubClientSecret = process.env.GITHUB_CLIENT_SECRET
+const trustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
+  ?.split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean)
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -16,6 +20,7 @@ export const auth = betterAuth({
     enabled: true
   },
   plugins: [organization()],
+  trustedOrigins,
   socialProviders: githubClientId && githubClientSecret
     ? {
         github: {

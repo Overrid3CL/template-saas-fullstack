@@ -1,4 +1,7 @@
 import { sub } from 'date-fns'
+import { assertDemoEndpointEnabled } from '../utils/demo-endpoint'
+import { ok } from '../utils/api-response'
+import { requireTenantContext } from '../utils/tenant-context'
 
 const notifications = [{
   id: 1,
@@ -251,6 +254,8 @@ const notifications = [{
   date: sub(new Date(), { days: 22 }).toISOString()
 }]
 
-export default eventHandler(async () => {
-  return notifications
+export default eventHandler(async (event) => {
+  assertDemoEndpointEnabled()
+  await requireTenantContext(event)
+  return ok(notifications)
 })

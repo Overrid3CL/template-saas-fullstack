@@ -1,4 +1,7 @@
 import { sub } from 'date-fns'
+import { assertDemoEndpointEnabled } from '../utils/demo-endpoint'
+import { ok } from '../utils/api-response'
+import { requireTenantContext } from '../utils/tenant-context'
 
 const mails = [{
   id: 1,
@@ -686,6 +689,8 @@ Emergency: (555) 987-6544`,
   date: sub(new Date(), { months: 2 }).toISOString()
 }]
 
-export default eventHandler(async () => {
-  return mails
+export default eventHandler(async (event) => {
+  assertDemoEndpointEnabled()
+  await requireTenantContext(event)
+  return ok(mails)
 })

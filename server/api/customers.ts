@@ -1,9 +1,10 @@
-import { CustomerRepository } from '../repositories/customer.repository'
+import { CustomerService } from '../services/customer.service'
 import { requireTenantContext } from '../utils/tenant-context'
+import { ok } from '../utils/api-response'
 
 export default eventHandler(async (event) => {
   const tenant = await requireTenantContext(event)
-  const customerRepository = new CustomerRepository(tenant.organizationId)
+  const service = new CustomerService(tenant.organizationId)
 
-  return customerRepository.list()
+  return ok(await service.list())
 })

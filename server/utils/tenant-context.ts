@@ -1,5 +1,6 @@
 import { createError, type H3Event } from 'h3'
 import { auth } from '~~/lib/auth'
+import { prisma } from './prisma'
 
 type AuthSession = Awaited<ReturnType<typeof auth.api.getSession>>
 
@@ -39,6 +40,27 @@ export async function requireTenantContext(event: H3Event): Promise<TenantContex
       data: {
         ok: false,
         error: 'ACTIVE_ORGANIZATION_REQUIRED'
+      }
+    })
+  }
+
+  const membership = await prisma.member.findFirst({
+    where: {
+      userId: session.user.id,
+      organizationId
+    },
+    select: {
+      id: true
+    }
+  })
+
+  if (!membership) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Active organization membership is required',
+      data: {
+        ok: false,
+        error: 'ACTIVE_ORGANIZATION_MEMBERSHIP_REQUIRED'
       }
     })
   }

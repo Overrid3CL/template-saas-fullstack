@@ -4,12 +4,19 @@ import { auth } from '~~/lib/auth'
 import { ProfileService } from '../services/profile.service'
 import { requireTenantContext } from '../utils/tenant-context'
 import { errorData, ok } from '../utils/api-response'
+import { enforceRateLimit } from '../utils/rate-limit'
 
 const bodySchema = z.object({
   confirmation: z.literal('ELIMINAR')
 })
 
 export default eventHandler(async (event) => {
+  enforceRateLimit(event, {
+    bucket: 'profile-delete',
+    max: 5,
+    windowMs: 60_000
+  })
+
   const tenant = await requireTenantContext(event)
   const body = await readBody(event)
   const parsed = bodySchema.safeParse(body)

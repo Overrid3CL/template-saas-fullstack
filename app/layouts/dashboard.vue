@@ -2,7 +2,6 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 const route = useRoute();
-const toast = useToast();
 
 const open = ref(false);
 
@@ -109,34 +108,6 @@ const groups = computed(() => [
   },
 ]);
 
-onMounted(async () => {
-  const cookie = useCookie("cookie-consent");
-  if (cookie.value === "accepted") {
-    return;
-  }
-
-  toast.add({
-    title:
-      "Usamos cookies propias para mejorar tu experiencia en nuestro sitio.",
-    duration: 0,
-    close: false,
-    actions: [
-      {
-        label: "Aceptar",
-        color: "neutral",
-        variant: "outline",
-        onClick: () => {
-          cookie.value = "accepted";
-        },
-      },
-      {
-        label: "Rechazar",
-        color: "neutral",
-        variant: "ghost",
-      },
-    ],
-  });
-});
 </script>
 
 <template>

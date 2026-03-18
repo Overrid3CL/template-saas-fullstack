@@ -6,6 +6,7 @@ definePageMeta({
 import { computed, ref, watch } from "vue";
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core";
 import type { Mail } from "~/types";
+import type { ApiSuccess } from "~/types/settings";
 
 const tabItems = [
   {
@@ -19,9 +20,8 @@ const tabItems = [
 ];
 const selectedTab = ref("all");
 
-const { data: mails } = await useFetch<Mail[]>("/api/mails", {
-  default: () => [],
-});
+const { data: mailsResponse } = await useFetch<ApiSuccess<Mail[]>>("/api/mails");
+const mails = computed<Mail[]>(() => mailsResponse.value?.data ?? []);
 
 // Filter mails based on the selected tab
 const filteredMails = computed(() => {

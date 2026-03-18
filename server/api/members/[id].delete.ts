@@ -3,9 +3,16 @@ import { MemberService } from '../../services/member.service'
 import { requireTenantContext } from '../../utils/tenant-context'
 import { DomainError } from '../../utils/domain-error'
 import { errorData, ok } from '../../utils/api-response'
+import { enforceRateLimit } from '../../utils/rate-limit'
 
 export default eventHandler(async (event) => {
   try {
+    enforceRateLimit(event, {
+      bucket: 'members-remove',
+      max: 15,
+      windowMs: 60_000
+    })
+
     const tenant = await requireTenantContext(event)
     const id = getRouterParam(event, 'id')
 
@@ -35,6 +42,14 @@ export default eventHandler(async (event) => {
           statusCode: 409,
           statusMessage: 'Conflict',
           data: errorData(error.code)
+        })
+      }
+
+      if (error.code === 'AUTHZ_OWNER_REQUIRED') {
+        throw createError({
+          statusCode: 403,
+          statusMessage: 'Forbidden',
+          data: errorData('AUTHZ_OWNER_REQUIRED')
         })
       }
     }

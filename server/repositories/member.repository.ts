@@ -58,6 +58,33 @@ export class MemberRepository {
     })
   }
 
+  async getById(memberId: string) {
+    return prisma.member.findFirst({
+      where: {
+        id: memberId,
+        organizationId: this.organizationId
+      }
+    })
+  }
+
+  async getByUserId(userId: string) {
+    return prisma.member.findFirst({
+      where: {
+        userId,
+        organizationId: this.organizationId
+      }
+    })
+  }
+
+  async countOwners() {
+    return prisma.member.count({
+      where: {
+        organizationId: this.organizationId,
+        role: 'owner'
+      }
+    })
+  }
+
   async remove(memberId: string) {
     const member = await prisma.member.findFirst({
       where: {
@@ -75,6 +102,15 @@ export class MemberRepository {
     })
 
     return member
+  }
+
+  async invalidateSessionsForOrganization(userId: string) {
+    await prisma.session.deleteMany({
+      where: {
+        userId,
+        activeOrganizationId: this.organizationId
+      }
+    })
   }
 
   async createInvitation(input: {

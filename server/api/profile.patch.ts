@@ -4,6 +4,7 @@ import { ProfileService } from '../services/profile.service'
 import { requireTenantContext } from '../utils/tenant-context'
 import { DomainError } from '../utils/domain-error'
 import { ok, errorData } from '../utils/api-response'
+import { enforceRateLimit } from '../utils/rate-limit'
 
 const bodySchema = z.object({
   name: z.string().trim().min(2, 'Name is too short'),
@@ -12,6 +13,12 @@ const bodySchema = z.object({
 
 export default eventHandler(async (event) => {
   try {
+    enforceRateLimit(event, {
+      bucket: 'profile-update',
+      max: 20,
+      windowMs: 60_000
+    })
+
     const tenant = await requireTenantContext(event)
     const body = await readBody(event)
     const parsed = bodySchema.safeParse(body)

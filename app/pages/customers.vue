@@ -8,6 +8,7 @@ import { upperFirst } from "scule";
 import { getPaginationRowModel } from "@tanstack/table-core";
 import type { Row } from "@tanstack/table-core";
 import type { User } from "~/types";
+import type { ApiSuccess } from "~/types/settings";
 
 const UAvatar = resolveComponent("UAvatar");
 const UButton = resolveComponent("UButton");
@@ -27,9 +28,10 @@ const columnFilters = ref([
 const columnVisibility = ref();
 const rowSelection = ref({ 1: true });
 
-const { data, status } = await useFetch<User[]>("/api/customers", {
+const { data, status } = await useFetch<ApiSuccess<User[]>>("/api/customers", {
   lazy: true,
 });
+const customers = computed(() => data.value?.data ?? []);
 
 function getRowItems(row: Row<User>) {
   return [
@@ -328,7 +330,7 @@ const pagination = ref({
           getPaginationRowModel: getPaginationRowModel(),
         }"
         class="shrink-0"
-        :data="data"
+        :data="customers"
         :columns="columns"
         :loading="status === 'pending'"
         :ui="{

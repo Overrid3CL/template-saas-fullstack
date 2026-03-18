@@ -28,7 +28,7 @@ Template base para crear aplicaciones SaaS con [Nuxt](https://nuxt.com), autenti
 - Base de autenticacion y estructura para organizaciones (multi-tenant).
 - Configuracion de Prisma lista para conectar con PostgreSQL.
 - Estructura inicial de app SaaS sobre Nuxt UI.
-- Scripts de desarrollo, build y flujo de migraciones.
+- Scripts de desarrollo, build, tests y flujo de migraciones.
 
 ## Inicio rapido
 
@@ -64,13 +64,21 @@ Este proyecto incluye Prisma ORM v7 configurado para PostgreSQL mediante una `DA
 pnpm prisma:generate
 ```
 
-5. Crea y aplica tu primera migracion despues de agregar modelos en `prisma/schema.prisma`:
+5. El proyecto incluye una migracion base versionada en `prisma/migrations/0001_init`.
+
+6. Para cambios de esquema posteriores, crea una nueva migracion:
 
 ```bash
-pnpm prisma:migrate:dev --name init
+pnpm prisma:migrate:dev --name <descripcion-del-cambio>
 ```
 
-6. Opcional: abre Prisma Studio:
+7. En despliegues productivos aplica migraciones pendientes:
+
+```bash
+pnpm prisma:migrate:deploy
+```
+
+8. Opcional: abre Prisma Studio:
 
 ```bash
 pnpm prisma:studio
@@ -94,6 +102,18 @@ Inicia el servidor de desarrollo en `http://localhost:3000`:
 pnpm dev
 ```
 
+## Pruebas y quality gates
+
+Ejecuta validaciones locales antes de abrir PR:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm prisma:migrations:check
+```
+
 ## Produccion
 
 Compila la aplicacion para produccion:
@@ -107,5 +127,19 @@ Previsualiza localmente el build de produccion:
 ```bash
 pnpm preview
 ```
+
+### Variables de entorno de produccion
+
+Revisa y completa `.env.example`. Variables claves para salida a produccion:
+
+- `BETTER_AUTH_TRUSTED_ORIGINS` para limitar orígenes permitidos en auth.
+- `ENABLE_DEMO_ENDPOINTS=false` para desactivar endpoints demo (`/api/mails`, `/api/notifications`, `/api/example`).
+- `OBJECT_STORAGE_*` para carga de avatar en S3/R2 compatible.
+- `LOG_LEVEL` y `REQUEST_LOGS_ENABLED` para logging estructurado.
+
+### Runbooks operativos
+
+- [Runbook de producción](./docs/operations/production-runbook.md)
+- [Runbook de backup y restore](./docs/operations/backup-restore.md)
 
 Consulta la [documentacion de despliegue](https://nuxt.com/docs/getting-started/deployment) para mas informacion.
